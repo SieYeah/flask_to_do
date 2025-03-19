@@ -22,12 +22,13 @@ tasks = [
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     return jsonify(tasks)
-def create_task():
+"""def create_task():
     data = request.get_json()
     new_task = Task(title=data["title"], done=False)
     db.session.add(new_task)
     db.session.commit()
-    return jsonify({"message": "zadanie dodane"}), 201
+    return jsonify({"message": "zadanie dodane"}), 201"""
+@app.route('/tasks', methods=['POST'])
 def create_task():
     try:
         data = request.get_json()
