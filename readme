@@ -1,0 +1,4 @@
+flask - main framework
+flask-sqlalchemy - sql handling
+flask-marshmallow - data validation
+marshmallow-sqlalchemy - objects mapping
