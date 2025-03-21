@@ -1,12 +1,22 @@
 from flask import Flask, jsonify, request
+from flask_jwt_extended import JWTManager
 from models import db, Task
 from schemas import ma, task_schema, tasks_schema
+
+
+#CONFIG
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tasks.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db.init_app(app) #connecting base from models.py 
+app.config["JWT_SECRET_KEY"] = "bazinga"
+jwy =JWTManager(app)
+
+
+#DATABASE
+
+db.init_app(app) #connecting base from models.py
 
 with app.app_context(): 
     db.create_all()
@@ -18,6 +28,9 @@ tasks = [
     {"id": 2, "title": "zainstaluj docker", "done": False},
     {"id": 3, "title": "nagraj wokal", "done": False}
     ]
+
+
+#ACTUAL APP
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
@@ -55,8 +68,9 @@ def create_task():
         return jsonify(task_schema.dump(new_task)), 201
     except Exception as e:
         return jsonify({"error": "błąd serwera", "details": str(e)}), 500
+ 
         
-        
+#START
 
 if __name__ == '__main__':
     app.run(debug=True)
