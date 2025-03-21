@@ -1,0 +1,37 @@
+#DELETE AFTER
+
+
+jwt = JSON web Token
+
+zaszyfrowany tekst dający informację serwerowi o uzytkowniku
+
+składa się z 3 częśći
+
+HEADER.PAYLOAD.SIGNATURE
+
+1. Header
+
+zawiera typ tokena i algorytm szyfrujący
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+
+2. Payload
+właściwa treść
+
+{
+  "sub": 123,
+  "exp": 1710937196
+}
+
+3. Signatrue
+Podpis, jest tworzony na podstawie tajnego klucza
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Token trafia do nagłówka authorization
+
+Authorization: Bearer <token>
+
+
