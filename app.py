@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager
-from models import db, Task
-from schemas import ma, task_schema, tasks_schema
+from models import db, Task, User
+from schemas import ma, task_schema, tasks_schema, register_schema
 
 
 #CONFIG
@@ -32,15 +32,35 @@ tasks = [
 
 #ACTUAL APP
 
+#login/regiser
+
+@app.route('/register', methods=['POST'])
+def register():
+    try:
+        data = request.get_json()
+
+        errors = register_schema.validate(data)
+        if errors:
+            return jsonify({"error" : errors}), 400
+        
+        new_user = User(email=data["email"])
+        new_user.set_password(data["password"])
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({"message": "Uzytkownik zarejestrowany"}), 201
+
+
+    except Exception as e:
+        return jsonify({"error": "blad serwa", "details": str(e)}), 500
+
+
+#tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     return jsonify(tasks)
-"""def create_task():
-    data = request.get_json()
-    new_task = Task(title=data["title"], done=False)
-    db.session.add(new_task)
-    db.session.commit()
-    return jsonify({"message": "zadanie dodane"}), 201"""
+
 @app.route('/tasks', methods=['POST'])
 def create_task():
     try:
@@ -49,17 +69,6 @@ def create_task():
         errors = task_schema.validate(data)
         if errors:
             return jsonify({"error": errors}), 400
-        
-
-        """if not data:
-            return jsonify({"error": "brak JSON"}), 400
-        
-        if "title" not in data:
-            return jsonify({"error": "brak title"}), 400
-        if not isinstance(data["title"], str) or len(data["title"].strip()) == 0:
-            return jsonify({"error": "title cannot be empty"})
-        if len(data["title"]) > 50:
-            return jsonify({"error": "title cannot exceed 50 characters"}), 400"""
         
         new_task = Task(title = data["title"], done = False)
         db.session.add(new_task)
