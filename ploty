@@ -35,3 +35,19 @@ Token trafia do nagłówka authorization
 Authorization: Bearer <token>
 
 
+
+BEZPIECZNE PRZECHOWYWANIE HASEŁ NA NISKIM POZIOMIE FLASK
+
+w bazie przechowujemy jedynie zahashowane hasła
+przykładowy back-endowy kod haszujący hasło to na przykład:
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
+hashed = generate_password_hash("tajnehaslo")
+print(hashed)  # np. pbkdf2:sha256$260000$...
+
+check_password_hash(hashed, "tajnehaslo")  # True
+check_password_hash(hashed, "zlehaslo")    # False
+
+
+
