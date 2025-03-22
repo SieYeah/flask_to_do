@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, create_access_token
+from marshmallow import ValidationError
 from models import db, Task, User
-from schemas import ma, task_schema, tasks_schema, register_schema
+from schemas import ma, task_schema, tasks_schema, register_schema, login_schema, LoginSchema
 
 
 #CONFIG
@@ -55,6 +56,26 @@ def register():
     except Exception as e:
         return jsonify({"error": "blad serwa", "details": str(e)}), 500
 
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        schema = LoginSchema()
+
+        errors = schema.load(data)
+
+        """if errors:
+            return jsonify({"error": errors}), 400"""
+        user = schema.context["user"]
+
+        access_token = create_access_token(identity = user.id)
+
+        return jsonify({"access_token": access_token}), 200
+        
+    except Exception as e:
+        return jsonify({"error": "blad serwa", "details": str(e)}), 500
+    except ValidationError as ve:
+        return jsonify({"error": ve.messages}), 401    
 
 #tasks
 @app.route('/tasks', methods=['GET'])
