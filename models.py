@@ -14,9 +14,9 @@ class User(db.Model):
     password = db.Column(db.Text, nullable = False)
 
     def set_password(self, password):
-        print("Hashuję hasło:", password)
+        #print("Hashuję hasło:", password)
         self.password = generate_password_hash(password)
-        print("Zapisuję do self.password:", self.password)
+        #print("Zapisuje do self.password:", self.password)
 
     def check_password(self, password):
         print(f"CHECKING: {password} vs {self.password}")
