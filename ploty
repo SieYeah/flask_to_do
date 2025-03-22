@@ -49,5 +49,66 @@ print(hashed)  # np. pbkdf2:sha256$260000$...
 check_password_hash(hashed, "tajnehaslo")  # True
 check_password_hash(hashed, "zlehaslo")    # False
 
+Raport z debugowania logowania i rejestracji użytkownika
+🎯 Problem:
+Hasło po rejestracji nie było hashowane (widoczne w bazie jako czysty tekst)
+check_password() zawsze zwracał False
+Logowanie nie działało mimo poprawnych danych
+🔍 Co się okazało:
+Pole w modelu User:
+
+python
+Skopiuj kod
+password = db.Column(db.String(30))
+🔴 Za krótkie! Hash ma >100 znaków → SQLAlchemy ucinało go przy zapisie
+
+W set_password() były printy, ale pokazywały password, a nie self.password
+→ przez co wyglądało, jakby hash się nie tworzył, mimo że był
+
+W logowaniu było:
+
+python
+Skopiuj kod
+errors = schema.load(data)
+if errors:
+    return ...
+🔴 .load() nie zwraca errors, tylko rzuca ValidationError → nie działała kontrola błędów
+
+✅ Jak to naprawiliśmy:
+Zmieniliśmy model:
+
+python
+Skopiuj kod
+password = db.Column(db.Text, nullable=False)
+✔️ teraz nie ogranicza długości hasła
+
+Poprawiliśmy set_password():
+
+python
+Skopiuj kod
+def set_password(self, password):
+    self.password = generate_password_hash(password)
+W loginie zamieniliśmy .load() na poprawną obsługę wyjątków:
+
+python
+Skopiuj kod
+try:
+    schema.load(data)
+except ValidationError as ve:
+    return jsonify({"error": ve.messages}), 401
+Dodaliśmy @validates_schema w LoginSchema, żeby sprawdzać hasło + przekazywać user przez self.context
+
+✅ Efekt:
+Hasła są bezpiecznie hashowane (pbkdf2:..., scrypt:...)
+Logowanie działa i zwraca token JWT
+Cała logika jest oddzielona i czysta (Flask + Marshmallow + JWT + SQLAlchemy)
+🧠 Lekcja na przyszłość:
+Co	Zapamiętaj
+String(30)	Nigdy do haseł – hash się nie zmieści
+.load() vs .validate()	.load() rzuca wyjątek, nie zwraca błędów
+@validates_schema	Świetne do logiki zależnej od wielu pól
+self.password vs password	self.password to to, co trafia do bazy – drukuj to
+V – raport konkretny, prawdziwy i uczący. Gotowy do wrzucenia do dokumentacji lub opowiedzenia o tym na rozmowie 😎
+
 
 
