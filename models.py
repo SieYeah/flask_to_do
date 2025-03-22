@@ -11,10 +11,13 @@ class Task(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     email = db.Column(db.String(28),  unique = True, nullable = False)
-    password = db.Column(db.String(30), nullable = False)
+    password = db.Column(db.Text, nullable = False)
 
     def set_password(self, password):
+        print("Hashuję hasło:", password)
         self.password = generate_password_hash(password)
+        print("Zapisuję do self.password:", self.password)
 
     def check_password(self, password):
-        self.password = check_password_hash(self.password, password)
+        print(f"CHECKING: {password} vs {self.password}")
+        return check_password_hash(self.password, password)
