@@ -3,6 +3,7 @@ from flask_jwt_extended import JWTManager, create_access_token
 from marshmallow import ValidationError
 from models import db, Task, User
 from schemas import ma, task_schema, tasks_schema, register_schema, login_schema, LoginSchema
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 #CONFIG
@@ -50,11 +51,11 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        return jsonify({"message": "Uzytkownik zarejestrowany"}), 201
+        return jsonify({"message": ""}), 201
 
 
     except Exception as e:
-        return jsonify({"error": "blad serwa", "details": str(e)}), 500
+        return jsonify({"error": "server error", "details": str(e)}), 500
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -68,37 +69,58 @@ def login():
             return jsonify({"error": errors}), 400"""
         user = schema.context["user"]
 
-        access_token = create_access_token(identity = user.id)
+        access_token = create_access_token(identity = str(user.id))
 
         return jsonify({"access_token": access_token}), 200
         
     except Exception as e:
-        return jsonify({"error": "blad serwa", "details": str(e)}), 500
+        return jsonify({"error": "server error", "details": str(e)}), 500
     except ValidationError as ve:
         return jsonify({"error": ve.messages}), 401    
 
 #tasks
 @app.route('/tasks', methods=['GET'])
+@jwt_required()
 def get_tasks():
-    return jsonify(tasks)
+    current_user_id = get_jwt_identity()
+    user_tasks = Task.query.filter_by(user_id = current_user_id).all()
+    print("logged in user: ", current_user_id)
+    return jsonify(tasks_schema.dump(user_tasks)), 200
 
 @app.route('/tasks', methods=['POST'])
+@jwt_required()
 def create_task():
     try:
+        current_user_id = get_jwt_identity()
         data = request.get_json()
 
         errors = task_schema.validate(data)
         if errors:
             return jsonify({"error": errors}), 400
         
-        new_task = Task(title = data["title"], done = False)
+        new_task = Task(title = data["title"], done = False, user_id=int(current_user_id))
         db.session.add(new_task)
         db.session.commit()
 
         return jsonify(task_schema.dump(new_task)), 201
     except Exception as e:
-        return jsonify({"error": "błąd serwera", "details": str(e)}), 500
- 
+        return jsonify({"error": "server error", "details": str(e)}), 500
+@app.route('/tasks/<int:task_id>', methods = ['DELETE'])
+@jwt_required()
+def delete_task(task_id):
+    try:
+        current_user_id = int(get_jwt_identity())
+        task = Task.query.filter_by(id = task_id, user_id = current_user_id).first()
+
+        if not task:
+            return jsonify({"error": "Task not found, 404"}), 404
+        
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({"message": "task deleted"}), 200
+    
+    except Exception as e:
+        return jsonify({"message": "serwer error", "details": str(e)}), 500
         
 #START
 
