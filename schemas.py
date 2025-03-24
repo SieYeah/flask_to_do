@@ -27,8 +27,9 @@ def validate_email(value):
 
 class TaskSchema(ma.Schema):
     id = fields.Int(dump_only = True)
-    title = fields.Str(required=True, validate=validate_title )
+    title = fields.Str(required = True, validate = validate_title )
     done = fields.Bool()
+    user_id = fields.Int(dump_only = True)
 class RegisterSchema(ma.Schema):
     email = fields.Str(required=True, validate = validate_email)
     password = fields.Str(required = True)
