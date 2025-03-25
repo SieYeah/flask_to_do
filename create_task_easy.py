@@ -1,4 +1,4 @@
-import requests
+"""import requests
 import argparse
 url = "http://127.0.0.1:5000"
 
@@ -18,5 +18,5 @@ headers = {"Authorization": f"Bearer {token}"}
 payload = {"title": args.add}
 
 #"{\"title\": \"kup jajka\"}"
-res = requests.post(f"{url}/tasks", json = payload, headers = headers)
+res = requests.post(f"{url}/tasks", json = payload, headers = headers)"""
 
