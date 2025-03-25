@@ -1,4 +1,4 @@
-import requests
+"""import requests
 import argparse
 
 
@@ -24,4 +24,4 @@ if res.status_code == 200:
     print("task deleted")
 else:
     print("error:", res.status_code)
-    print("tried to delete taks nr:", args.delete, "but didnt work")
+    print("tried to delete taks nr:", args.delete, "but didnt work")"""
